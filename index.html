@@ -122,17 +122,7 @@ tbody tr:hover td{background:rgba(255,255,255,.03);}tbody tr:last-child td{borde
   <div class="logo">SR</div>
   <div><div class="hdr-title">MSP &amp; NDD Courier Alert Dashboard</div>
   <div class="hdr-sub">Multi-client courier allocation defect detection &middot; Auto-generated report</div></div>
-  <div class="run-time"><strong>52,391 AWBs processed</strong>Generated: 12 Jun 2026, 02:36 PM</div>
-</div>
-<div class="view-switch">
-  <div class="view-btn active" id="view-std" onclick="setView('std')">
-    <div class="view-btn-title">&#128230; Standard Allocation</div>
-    <div class="view-btn-sub">Dashboard Priority Flag = No</div>
-  </div>
-  <div class="view-btn" id="view-rp" onclick="setView('rp')">
-    <div class="view-btn-title">&#11088; Rule Priority Allocation</div>
-    <div class="view-btn-sub">Dashboard Priority Flag = Yes</div>
-  </div>
+  <div class="run-time"><strong>52,391 AWBs processed</strong>Generated: 12 Jun 2026, 04:07 PM</div>
 </div>
 <div class="tabs">
   <div class="tab active" onclick="switchTab('overview')" id="t-overview">&#128202; Overview</div>
@@ -186,7 +176,7 @@ const ROWS=[["152785862600142","26258","PLIX","Marico Plix","402","Xpressbees","
 const COUNTS={"correct_msp":28439,"msp_defect":5992,"ndd_defect":1551,"brand_defect":210,"alert":131,"correct_brand":7054,"correct_ndd":4427,"rule_priority_defect":96,"correct_rule_priority":938,"out_of_scope":181,"rule_not_found":3372};
 const STATUS_LABELS={"correct_ndd":"Correct NDD","ndd_defect":"NDD Defect","correct_msp":"Correct MSP","msp_defect":"MSP Defect","correct_brand":"Correct Brand Courier","brand_defect":"Brand Courier Defect","correct_rule_priority":"Correct Rule Priority","rule_priority_defect":"Rule Priority Defect","alert":"Alert","out_of_scope":"Out of Scope Order","rule_not_found":"Rule Not Found"};
 const TOTAL=52391;
-const RUN_TIME="12 Jun 2026, 02:36 PM";
+const RUN_TIME="12 Jun 2026, 04:07 PM";
 
 const PAGE=100;
 const SVC_TABS=['ndd_defect','msp_defect','brand_defect','rule_priority_defect','all'];
@@ -206,11 +196,13 @@ const STATUS_COLOR={
 };
 const DONUT_ORDER=['correct_ndd','ndd_defect','correct_msp','msp_defect','correct_brand','brand_defect','correct_rule_priority','rule_priority_defect','alert','out_of_scope','rule_not_found'];
 const DONUT_COLORS=['#22c55e','#f59e0b','#3b82f6','#f97316','#8b5cf6','#a855f7','#06b6d4','#eab308','#ef4444','#6b7280','#475569'];
-// Statuses hidden from each view's tab bar / overview cards / donut chart.
-// Rule Not Found is now shown in BOTH views (each view sees only its own
-// brands' unmapped orders, thanks to the dash_flag-based split applied in
-// getViewRows / process_orders).
-const VIEW_HIDE={std:['correct_rule_priority','rule_priority_defect'],rp:[]};
+// 2026-06-12: Rule Priority Allocation view is temporarily removed from the UI
+// (view-switch hidden) and the Dashboard Priority Flag (dash_flag) is no longer
+// used to split rows between views - see getViewRows(). The single remaining
+// "Standard Allocation" view now shows ALL statuses for ALL AWBs, including
+// Correct Rule Priority / Rule Priority Defect. VIEW_HIDE/currentView/setView
+// are kept as no-ops so the rp view can be reintroduced later with new logic.
+const VIEW_HIDE={std:[],rp:[]};
 let tabState={},donutChart=null,currentTab='overview',currentView='std';
 
 function ci(k){return COLS.indexOf(k);}
@@ -221,8 +213,11 @@ const iAWB=ci('awb'),iCID=ci('cid'),iCO=ci('company'),iBR=ci('brand'),iCR=ci('co
       iST=ci('status'),iPDEF=ci('priority_defect'),iSVC=ci('svc');
 
 function tsKey(view,tab){return view+'|'+tab;}
+// dash_flag-based view split disabled "as of now" (2026-06-12) - every row
+// belongs to the single Standard Allocation view until new Rule Priority
+// Allocation logic is provided.
 function getViewRows(view){
-  return view==='std' ? ROWS.filter(r=>r[iDFLAG]!=='Yes') : ROWS.filter(r=>r[iDFLAG]!=='No');
+  return ROWS;
 }
 
 function pills(s){
