@@ -122,7 +122,7 @@ tbody tr:hover td{background:rgba(255,255,255,.03);}tbody tr:last-child td{borde
   <div class="logo">SR</div>
   <div><div class="hdr-title">MSP &amp; NDD Courier Alert Dashboard</div>
   <div class="hdr-sub">Multi-client courier allocation defect detection &middot; Auto-generated report</div></div>
-  <div class="run-time"><strong>52,391 AWBs processed</strong>Generated: 12 Jun 2026, 10:09 AM</div>
+  <div class="run-time"><strong>52,391 AWBs processed</strong>Generated: 12 Jun 2026, 10:28 AM</div>
 </div>
 <div class="view-switch">
   <div class="view-btn active" id="view-std" onclick="setView('std')">
@@ -162,7 +162,7 @@ tbody tr:hover td{background:rgba(255,255,255,.03);}tbody tr:last-child td{borde
       <div style="height:280px"><canvas id="donut-chart"></canvas></div></div>
     <div class="card"><div class="ch"><span></span>Client / Brand Breakdown</div>
       <div class="tw"><table>
-        <thead><tr><th>Brand</th><th>Total</th><th>Correct&#9989;</th><th>Defect&#9888;</th><th>Priority Defects</th><th>&#128308; Alert</th><th>Out of Scope</th><th>Rule Not Found</th><th>Defect%</th></tr></thead>
+        <thead><tr id="client-thead"></tr></thead>
         <tbody id="client-body"></tbody>
       </table></div></div>
   </div>
@@ -186,7 +186,7 @@ const ROWS=[["152785862600142","26258","PLIX","Marico Plix","402","Xpressbees","
 const COUNTS={"correct_msp":28439,"msp_defect":5992,"ndd_defect":1551,"brand_defect":210,"alert":131,"correct_brand":7054,"correct_ndd":4427,"rule_priority_defect":96,"correct_rule_priority":938,"out_of_scope":181,"rule_not_found":3372};
 const STATUS_LABELS={"correct_ndd":"Correct NDD","ndd_defect":"NDD Defect","correct_msp":"Correct MSP","msp_defect":"MSP Defect","correct_brand":"Correct Brand Courier","brand_defect":"Brand Courier Defect","correct_rule_priority":"Correct Rule Priority","rule_priority_defect":"Rule Priority Defect","alert":"Alert","out_of_scope":"Out of Scope Order","rule_not_found":"Rule Not Found"};
 const TOTAL=52391;
-const RUN_TIME="12 Jun 2026, 10:09 AM";
+const RUN_TIME="12 Jun 2026, 10:28 AM";
 
 const PAGE=100;
 const SVC_TABS=['ndd_defect','msp_defect','brand_defect','rule_priority_defect','all'];
@@ -467,18 +467,25 @@ function renderOverview(){
     if(s==='out_of_scope')c.oos++;
     if(s==='rule_not_found')c.rnf++;
   });
+  // "Rule Not Found" column is only relevant to the Standard Allocation view.
+  const showRnf=currentView!=='rp';
+  const headCells=['Brand','Total','Correct&#9989;','Defect&#9888;','Priority Defects','&#128308; Alert','Out of Scope'];
+  if(showRnf)headCells.push('Rule Not Found');
+  headCells.push('Defect%');
+  document.getElementById('client-thead').innerHTML=headCells.map(h=>`<th>${h}</th>`).join('');
   document.getElementById('client-body').innerHTML=Object.entries(clientMap).sort().map(([name,c])=>{
     const pct=c.total>0?((c.defect/c.total)*100).toFixed(1):0;
     const col=pct>20?'var(--rd)':pct>10?'var(--yw)':'var(--gr)';
-    return '<tr><td style="font-weight:700">'+name+'</td><td>'+c.total.toLocaleString()+'</td>'
+    let row='<tr><td style="font-weight:700">'+name+'</td><td>'+c.total.toLocaleString()+'</td>'
       +'<td style="color:#4ade80">'+c.correct+'</td>'
       +'<td style="color:#fbbf24">'+c.defect+'</td>'
       +'<td style="color:#f59e0b">'+c.pdefect+'</td>'
       +'<td style="color:#f87171">'+c.alert+'</td>'
-      +'<td style="color:var(--dim)">'+c.oos+'</td>'
-      +'<td style="color:var(--dim)">'+c.rnf+'</td>'
-      +'<td><span style="color:'+col+';font-weight:700">'+pct+'%</span>'
+      +'<td style="color:var(--dim)">'+c.oos+'</td>';
+    if(showRnf)row+='<td style="color:var(--dim)">'+c.rnf+'</td>';
+    row+='<td><span style="color:'+col+';font-weight:700">'+pct+'%</span>'
       +'<div class="pbar"><div class="pfil" style="width:'+Math.min(pct,100)+'%;background:'+col+'"></div></div></td></tr>';
+    return row;
   }).join('');
 }
 document.addEventListener('DOMContentLoaded',function(){initBrandFilter('std');applyViewTabs('std');renderOverview();});
