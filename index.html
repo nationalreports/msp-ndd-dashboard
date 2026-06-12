@@ -4,7 +4,6 @@
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>MSP & NDD Courier Alert Dashboard</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <style>
 :root{--or:#e8610a;--bg:#0f1117;--card:#1a1d27;--card2:#212435;--bdr:#2e3150;--txt:#e4e6f0;--dim:#7a7f99;--gr:#22c55e;--yw:#f59e0b;--rd:#ef4444;--bl:#3b82f6;}
 *{box-sizing:border-box;margin:0;padding:0;}
@@ -29,7 +28,6 @@ body{background:var(--bg);color:var(--txt);font-family:'Segoe UI',system-ui,sans
 .tab:hover{color:var(--txt);}.tab.active{color:var(--or);border-bottom-color:var(--or);}
 .pnl{display:none;padding:20px 24px;max-width:1500px;margin:0 auto;}.pnl.active{display:block;}
 .g6{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:20px;}
-.g2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;}
 .sc{background:var(--card);border:1px solid var(--bdr);border-radius:11px;padding:16px;position:relative;overflow:hidden;cursor:pointer;transition:border-color .2s;}
 .sc:hover{border-color:var(--or);}.sc::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--ac,var(--or));}
 .sc .lbl{font-size:10px;font-weight:700;color:var(--dim);text-transform:uppercase;letter-spacing:.5px;}
@@ -44,6 +42,8 @@ body{background:var(--bg);color:var(--txt);font-family:'Segoe UI',system-ui,sans
 .tw{overflow:auto;border-radius:9px;border:1px solid var(--bdr);max-height:580px;}
 table{width:100%;border-collapse:collapse;font-size:12px;}
 thead th{background:var(--card2);padding:9px 11px;text-align:left;font-weight:700;color:var(--dim);font-size:10.5px;text-transform:uppercase;letter-spacing:.4px;white-space:nowrap;border-bottom:1px solid var(--bdr);position:sticky;top:0;z-index:2;}
+#client-thead th{cursor:pointer;user-select:none;}
+#client-thead th:hover{color:var(--txt);}
 tbody td{padding:8px 11px;border-bottom:1px solid rgba(46,49,80,.4);}
 tbody tr:hover td{background:rgba(255,255,255,.03);}tbody tr:last-child td{border-bottom:none;}
 .bdg{display:inline-flex;align-items:center;gap:3px;padding:2px 9px;border-radius:20px;font-size:10.5px;font-weight:700;}
@@ -71,7 +71,7 @@ tbody tr:hover td{background:rgba(255,255,255,.03);}tbody tr:last-child td{borde
 .view-btn.active .view-btn-title{color:var(--or);}
 .view-btn-sub{font-size:10.5px;color:var(--dim);margin-top:2px;}
 .bdg+.bdg{margin-left:4px;}
-@media(max-width:900px){.g6{grid-template-columns:repeat(2,1fr);}.g2{grid-template-columns:1fr;}.view-switch{flex-direction:column;}.view-btn{max-width:none;}}
+@media(max-width:900px){.g6{grid-template-columns:repeat(2,1fr);}.view-switch{flex-direction:column;}.view-btn{max-width:none;}}
 </style>
 <script>
 (function(){
@@ -122,7 +122,7 @@ tbody tr:hover td{background:rgba(255,255,255,.03);}tbody tr:last-child td{borde
   <div class="logo">SR</div>
   <div><div class="hdr-title">MSP &amp; NDD Courier Alert Dashboard</div>
   <div class="hdr-sub">Multi-client courier allocation defect detection &middot; Auto-generated report</div></div>
-  <div class="run-time"><strong>52,391 AWBs processed</strong>Generated: 12 Jun 2026, 04:07 PM</div>
+  <div class="run-time"><strong>52,391 AWBs processed</strong>Generated: 12 Jun 2026, 04:26 PM</div>
 </div>
 <div class="tabs">
   <div class="tab active" onclick="switchTab('overview')" id="t-overview">&#128202; Overview</div>
@@ -147,15 +147,11 @@ tbody tr:hover td{background:rgba(255,255,255,.03);}tbody tr:last-child td{borde
     </select>
   </div>
   <div class="g6" id="stat-cards"></div>
-  <div class="g2">
-    <div class="card"><div class="ch"><span></span>Status Distribution</div>
-      <div style="height:280px"><canvas id="donut-chart"></canvas></div></div>
-    <div class="card"><div class="ch"><span></span>Client / Brand Breakdown</div>
-      <div class="tw"><table>
-        <thead><tr id="client-thead"></tr></thead>
-        <tbody id="client-body"></tbody>
-      </table></div></div>
-  </div>
+  <div class="card"><div class="ch"><span></span>Client / Brand Breakdown</div>
+    <div class="tw"><table>
+      <thead><tr id="client-thead"></tr></thead>
+      <tbody id="client-body"></tbody>
+    </table></div></div>
 
 </div>
 <div class="pnl" id="pnl-correct_ndd"></div>
@@ -176,7 +172,7 @@ const ROWS=[["152785862600142","26258","PLIX","Marico Plix","402","Xpressbees","
 const COUNTS={"correct_msp":28439,"msp_defect":5992,"ndd_defect":1551,"brand_defect":210,"alert":131,"correct_brand":7054,"correct_ndd":4427,"rule_priority_defect":96,"correct_rule_priority":938,"out_of_scope":181,"rule_not_found":3372};
 const STATUS_LABELS={"correct_ndd":"Correct NDD","ndd_defect":"NDD Defect","correct_msp":"Correct MSP","msp_defect":"MSP Defect","correct_brand":"Correct Brand Courier","brand_defect":"Brand Courier Defect","correct_rule_priority":"Correct Rule Priority","rule_priority_defect":"Rule Priority Defect","alert":"Alert","out_of_scope":"Out of Scope Order","rule_not_found":"Rule Not Found"};
 const TOTAL=52391;
-const RUN_TIME="12 Jun 2026, 04:07 PM";
+const RUN_TIME="12 Jun 2026, 04:26 PM";
 
 const PAGE=100;
 const SVC_TABS=['ndd_defect','msp_defect','brand_defect','rule_priority_defect','all'];
@@ -194,8 +190,6 @@ const STATUS_COLOR={
   correct_rule_priority:'bdg-gr',rule_priority_defect:'bdg-yw',
   out_of_scope:'bdg-gy',alert:'bdg-rd',rule_not_found:'bdg-gy'
 };
-const DONUT_ORDER=['correct_ndd','ndd_defect','correct_msp','msp_defect','correct_brand','brand_defect','correct_rule_priority','rule_priority_defect','alert','out_of_scope','rule_not_found'];
-const DONUT_COLORS=['#22c55e','#f59e0b','#3b82f6','#f97316','#8b5cf6','#a855f7','#06b6d4','#eab308','#ef4444','#6b7280','#475569'];
 // 2026-06-12: Rule Priority Allocation view is temporarily removed from the UI
 // (view-switch hidden) and the Dashboard Priority Flag (dash_flag) is no longer
 // used to split rows between views - see getViewRows(). The single remaining
@@ -203,7 +197,22 @@ const DONUT_COLORS=['#22c55e','#f59e0b','#3b82f6','#f97316','#8b5cf6','#a855f7',
 // Correct Rule Priority / Rule Priority Defect. VIEW_HIDE/currentView/setView
 // are kept as no-ops so the rp view can be reintroduced later with new logic.
 const VIEW_HIDE={std:[],rp:[]};
-let tabState={},donutChart=null,currentTab='overview',currentView='std';
+let tabState={},currentTab='overview',currentView='std';
+let clientRows=[],clientSort={key:'name',dir:'asc'};
+const CLIENT_COLS=[
+  {key:'name',label:'Brand',type:'str'},
+  {key:'total',label:'Total',type:'num'},
+  {key:'correct',label:'Correct&#9989;',type:'num'},
+  {key:'ndd_defect',label:'NDD Defect',type:'num'},
+  {key:'msp_defect',label:'MSP Defect',type:'num'},
+  {key:'brand_defect',label:'Brand Defect',type:'num'},
+  {key:'rule_priority_defect',label:'Rule Priority Defect',type:'num'},
+  {key:'pdefect',label:'Priority Defects',type:'num'},
+  {key:'alert',label:'&#128308; Alert',type:'num'},
+  {key:'oos',label:'Out of Scope',type:'num'},
+  {key:'rnf',label:'Rule Not Found',type:'num'},
+  {key:'pct',label:'Defect%',type:'num'}
+];
 
 function ci(k){return COLS.indexOf(k);}
 const iAWB=ci('awb'),iCID=ci('cid'),iCO=ci('company'),iBR=ci('brand'),iCR=ci('courier_id'),
@@ -440,26 +449,18 @@ function renderOverview(){
       <div class="pct">${total>0&&d.s!=='total'?((d.val/total)*100).toFixed(1)+'% of total':'Click to view all'}</div>
       <div class="ico">${d.icon}</div></div>`).join('');
   updateTabCounts();
-  if(donutChart)donutChart.destroy();
-  const donutPairs=DONUT_ORDER.map((s,i)=>[s,DONUT_COLORS[i]]).filter(([s])=>!hide.has(s));
-  donutChart=new Chart(document.getElementById('donut-chart').getContext('2d'),{
-    type:'doughnut',
-    data:{labels:donutPairs.map(([s])=>STATUS_LABELS[s]),
-      datasets:[{data:donutPairs.map(([s])=>fc[s]),
-        backgroundColor:donutPairs.map(([,c])=>c),
-        borderWidth:2,borderColor:'#1a1d27'}]},
-    options:{responsive:true,maintainAspectRatio:false,cutout:'65%',
-      plugins:{legend:{position:'right',labels:{color:'#e4e6f0',font:{size:11},padding:12}}}}
-  });
   const clientMap={};
   filtered.forEach(r=>{
     const b=r[iBR]||'Unknown';
-    if(!clientMap[b])clientMap[b]={total:0,correct:0,defect:0,pdefect:0,alert:0,oos:0,rnf:0};
+    if(!clientMap[b])clientMap[b]={total:0,correct:0,ndd_defect:0,msp_defect:0,brand_defect:0,rule_priority_defect:0,pdefect:0,alert:0,oos:0,rnf:0};
     const c=clientMap[b];
     c.total++;
     const s=r[iST];
     if(s==='correct_ndd'||s==='correct_msp'||s==='correct_brand'||s==='correct_rule_priority')c.correct++;
-    if(s==='ndd_defect'||s==='msp_defect'||s==='brand_defect'||s==='rule_priority_defect')c.defect++;
+    if(s==='ndd_defect')c.ndd_defect++;
+    if(s==='msp_defect')c.msp_defect++;
+    if(s==='brand_defect')c.brand_defect++;
+    if(s==='rule_priority_defect')c.rule_priority_defect++;
     if(r[iPDEF])c.pdefect++;
     if(s==='alert')c.alert++;
     if(s==='out_of_scope')c.oos++;
@@ -468,22 +469,48 @@ function renderOverview(){
   // "Rule Not Found" column is shown in both views now: each view's clientMap
   // (built from `filtered=getViewRows(currentView)`) only contains that view's
   // own brands' rule_not_found rows, so the count is always meaningful here.
-  const headCells=['Brand','Total','Correct&#9989;','Defect&#9888;','Priority Defects','&#128308; Alert','Out of Scope','Rule Not Found','Defect%'];
-  document.getElementById('client-thead').innerHTML=headCells.map(h=>`<th>${h}</th>`).join('');
-  document.getElementById('client-body').innerHTML=Object.entries(clientMap).sort().map(([name,c])=>{
-    const pct=c.total>0?((c.defect/c.total)*100).toFixed(1):0;
-    const col=pct>20?'var(--rd)':pct>10?'var(--yw)':'var(--gr)';
-    let row='<tr><td style="font-weight:700">'+name+'</td><td>'+c.total.toLocaleString()+'</td>'
-      +'<td style="color:#4ade80">'+c.correct+'</td>'
-      +'<td style="color:#fbbf24">'+c.defect+'</td>'
-      +'<td style="color:#f59e0b">'+c.pdefect+'</td>'
-      +'<td style="color:#f87171">'+c.alert+'</td>'
-      +'<td style="color:var(--dim)">'+c.oos+'</td>'
-      +'<td style="color:var(--dim)">'+c.rnf+'</td>'
-      +'<td><span style="color:'+col+';font-weight:700">'+pct+'%</span>'
-      +'<div class="pbar"><div class="pfil" style="width:'+Math.min(pct,100)+'%;background:'+col+'"></div></div></td></tr>';
-    return row;
+  clientRows=Object.entries(clientMap).map(([name,c])=>{
+    const defectTotal=c.ndd_defect+c.msp_defect+c.brand_defect+c.rule_priority_defect;
+    return {name,...c,pct:c.total>0?(defectTotal/c.total)*100:0};
+  });
+  renderClientTable();
+}
+function renderClientTable(){
+  const {key,dir}=clientSort;
+  const colDef=CLIENT_COLS.find(c=>c.key===key);
+  const rows=[...clientRows].sort((a,b)=>{
+    const av=a[key],bv=b[key];
+    const cmp=colDef.type==='str'?String(av).localeCompare(String(bv)):(av-bv);
+    return dir==='asc'?cmp:-cmp;
+  });
+  document.getElementById('client-thead').innerHTML=CLIENT_COLS.map(c=>{
+    const arrow=c.key===key?(dir==='asc'?' &#9650;':' &#9660;'):'';
+    return `<th onclick="sortClientTable('${c.key}')">${c.label}${arrow}</th>`;
   }).join('');
+  document.getElementById('client-body').innerHTML=rows.map(r=>{
+    const pct=r.pct;
+    const col=pct>20?'var(--rd)':pct>10?'var(--yw)':'var(--gr)';
+    return '<tr><td style="font-weight:700">'+r.name+'</td><td>'+r.total.toLocaleString()+'</td>'
+      +'<td style="color:#4ade80">'+r.correct+'</td>'
+      +'<td style="color:var(--yw)">'+r.ndd_defect+'</td>'
+      +'<td style="color:#f97316">'+r.msp_defect+'</td>'
+      +'<td style="color:#a855f7">'+r.brand_defect+'</td>'
+      +'<td style="color:#eab308">'+r.rule_priority_defect+'</td>'
+      +'<td style="color:#f59e0b">'+r.pdefect+'</td>'
+      +'<td style="color:#f87171">'+r.alert+'</td>'
+      +'<td style="color:var(--dim)">'+r.oos+'</td>'
+      +'<td style="color:var(--dim)">'+r.rnf+'</td>'
+      +'<td><span style="color:'+col+';font-weight:700">'+pct.toFixed(1)+'%</span>'
+      +'<div class="pbar"><div class="pfil" style="width:'+Math.min(pct,100)+'%;background:'+col+'"></div></div></td></tr>';
+  }).join('');
+}
+function sortClientTable(key){
+  if(clientSort.key===key){
+    clientSort.dir=clientSort.dir==='asc'?'desc':'asc';
+  }else{
+    clientSort={key,dir:CLIENT_COLS.find(c=>c.key===key).type==='str'?'asc':'desc'};
+  }
+  renderClientTable();
 }
 document.addEventListener('DOMContentLoaded',function(){initBrandFilter('std');applyViewTabs('std');renderOverview();});
 </script>
