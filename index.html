@@ -122,7 +122,7 @@ tbody tr:hover td{background:rgba(255,255,255,.03);}tbody tr:last-child td{borde
   <div class="logo">SR</div>
   <div><div class="hdr-title">MSP &amp; NDD Courier Alert Dashboard</div>
   <div class="hdr-sub">Multi-client courier allocation defect detection &middot; Auto-generated report</div></div>
-  <div class="run-time"><strong>52,391 AWBs processed</strong>Generated: 12 Jun 2026, 04:26 PM</div>
+  <div class="run-time"><strong>52,391 AWBs processed</strong>Generated: 12 Jun 2026, 04:36 PM</div>
 </div>
 <div class="tabs">
   <div class="tab active" onclick="switchTab('overview')" id="t-overview">&#128202; Overview</div>
@@ -172,7 +172,7 @@ const ROWS=[["152785862600142","26258","PLIX","Marico Plix","402","Xpressbees","
 const COUNTS={"correct_msp":28439,"msp_defect":5992,"ndd_defect":1551,"brand_defect":210,"alert":131,"correct_brand":7054,"correct_ndd":4427,"rule_priority_defect":96,"correct_rule_priority":938,"out_of_scope":181,"rule_not_found":3372};
 const STATUS_LABELS={"correct_ndd":"Correct NDD","ndd_defect":"NDD Defect","correct_msp":"Correct MSP","msp_defect":"MSP Defect","correct_brand":"Correct Brand Courier","brand_defect":"Brand Courier Defect","correct_rule_priority":"Correct Rule Priority","rule_priority_defect":"Rule Priority Defect","alert":"Alert","out_of_scope":"Out of Scope Order","rule_not_found":"Rule Not Found"};
 const TOTAL=52391;
-const RUN_TIME="12 Jun 2026, 04:26 PM";
+const RUN_TIME="12 Jun 2026, 04:36 PM";
 
 const PAGE=100;
 const SVC_TABS=['ndd_defect','msp_defect','brand_defect','rule_priority_defect','all'];
@@ -207,7 +207,6 @@ const CLIENT_COLS=[
   {key:'msp_defect',label:'MSP Defect',type:'num'},
   {key:'brand_defect',label:'Brand Defect',type:'num'},
   {key:'rule_priority_defect',label:'Rule Priority Defect',type:'num'},
-  {key:'pdefect',label:'Priority Defects',type:'num'},
   {key:'alert',label:'&#128308; Alert',type:'num'},
   {key:'oos',label:'Out of Scope',type:'num'},
   {key:'rnf',label:'Rule Not Found',type:'num'},
@@ -452,7 +451,7 @@ function renderOverview(){
   const clientMap={};
   filtered.forEach(r=>{
     const b=r[iBR]||'Unknown';
-    if(!clientMap[b])clientMap[b]={total:0,correct:0,ndd_defect:0,msp_defect:0,brand_defect:0,rule_priority_defect:0,pdefect:0,alert:0,oos:0,rnf:0};
+    if(!clientMap[b])clientMap[b]={total:0,correct:0,ndd_defect:0,msp_defect:0,brand_defect:0,rule_priority_defect:0,alert:0,oos:0,rnf:0};
     const c=clientMap[b];
     c.total++;
     const s=r[iST];
@@ -461,7 +460,6 @@ function renderOverview(){
     if(s==='msp_defect')c.msp_defect++;
     if(s==='brand_defect')c.brand_defect++;
     if(s==='rule_priority_defect')c.rule_priority_defect++;
-    if(r[iPDEF])c.pdefect++;
     if(s==='alert')c.alert++;
     if(s==='out_of_scope')c.oos++;
     if(s==='rule_not_found')c.rnf++;
@@ -496,7 +494,6 @@ function renderClientTable(){
       +'<td style="color:#f97316">'+r.msp_defect+'</td>'
       +'<td style="color:#a855f7">'+r.brand_defect+'</td>'
       +'<td style="color:#eab308">'+r.rule_priority_defect+'</td>'
-      +'<td style="color:#f59e0b">'+r.pdefect+'</td>'
       +'<td style="color:#f87171">'+r.alert+'</td>'
       +'<td style="color:var(--dim)">'+r.oos+'</td>'
       +'<td style="color:var(--dim)">'+r.rnf+'</td>'
