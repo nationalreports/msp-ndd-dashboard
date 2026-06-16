@@ -76,6 +76,10 @@ tbody tr:hover td{background:rgba(255,255,255,.03);}tbody tr:last-child td{borde
 .view-btn-title{font-size:13px;font-weight:700;}
 .view-btn.active .view-btn-title{color:var(--or);}
 .view-btn-sub{font-size:10.5px;color:var(--dim);margin-top:2px;}
+.section-switch{display:flex;background:var(--card);border-bottom:2px solid var(--bdr);padding:10px 24px;gap:12px;}
+.section-btn{padding:11px 28px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:700;color:var(--dim);border:2px solid transparent;transition:all .2s;}
+.section-btn:hover{color:var(--txt);border-color:var(--bdr);}
+.section-btn.active{background:rgba(232,97,10,.12);border-color:var(--or);color:var(--or);}
 .bdg+.bdg{margin-left:4px;}
 @media(max-width:900px){.g6{grid-template-columns:repeat(2,1fr);}.view-switch{flex-direction:column;}.view-btn{max-width:none;}}
 </style>
@@ -128,9 +132,13 @@ tbody tr:hover td{background:rgba(255,255,255,.03);}tbody tr:last-child td{borde
   <div class="logo">SR</div>
   <div><div class="hdr-title">MSP &amp; NDD Courier Alert Dashboard</div>
   <div class="hdr-sub">Multi-client courier allocation defect detection &middot; Auto-generated report</div></div>
-  <div class="run-time"><strong>75,525 AWBs processed</strong>Generated: 16 Jun 2026, 01:12 PM</div>
+  <div class="run-time"><strong>75,525 AWBs processed</strong>Generated: 16 Jun 2026, 01:25 PM</div>
 </div>
-<div class="tabs">
+<div class="section-switch">
+  <div class="section-btn active" onclick="switchSection('mspndd')" id="sec-mspndd">&#128230; MSP &amp; NDD Courier Allocation</div>
+  <div class="section-btn" onclick="switchSection('kam')" id="sec-kam">&#127381; KAM Based Courier Allocation</div>
+</div>
+<div id="mspndd-tabbar"><div class="tabs">
   <div class="tab active" onclick="switchTab('overview')" id="t-overview">&#128202; Overview</div>
   <div class="tab" onclick="switchTab('correct_ndd')" id="t-correct_ndd">&#9989; Correct NDD <span id="cnt-correct_ndd"></span></div>
   <div class="tab" onclick="switchTab('ndd_defect')" id="t-ndd_defect">&#9888;&#65039; NDD Defect <span id="cnt-ndd_defect"></span></div>
@@ -144,8 +152,7 @@ tbody tr:hover td{background:rgba(255,255,255,.03);}tbody tr:last-child td{borde
   <div class="tab" onclick="switchTab('alert')" id="t-alert">&#128308; Alert <span id="cnt-alert"></span></div>
   <div class="tab" onclick="switchTab('rule_not_found')" id="t-rule_not_found">&#10067; Rule Not Found <span id="cnt-rule_not_found"></span></div>
   <div class="tab" onclick="switchTab('all')" id="t-all">&#128203; All AWBs</div>
-  <div class="tab" onclick="switchTab('kam')" id="t-kam">&#127381; KAM Courier Allocation</div>
-</div>
+</div></div>
 <div class="pnl active" id="pnl-overview">
   <div class="tab-hdr" style="margin-bottom:14px">
     <span style="font-size:13px;font-weight:700;color:var(--txt)">Overview</span>
@@ -173,7 +180,7 @@ tbody tr:hover td{background:rgba(255,255,255,.03);}tbody tr:last-child td{borde
 <div class="pnl" id="pnl-alert"></div>
 <div class="pnl" id="pnl-rule_not_found"></div>
 <div class="pnl" id="pnl-all"></div>
-<div class="pnl" id="pnl-kam">
+<div id="section-kam" style="display:none">
   <div class="kam-tabs" id="kam-tabs">
     <div class="ktab active" onclick="switchKamTab('kam-overview')" id="kt-kam-overview">&#128202; Overview</div>
     <div class="ktab" onclick="switchKamTab('correct_ndd')" id="kt-correct_ndd">&#9989; Correct NDD <span id="kcnt-correct_ndd"></span></div>
@@ -214,7 +221,7 @@ const ROWS=[["152785862601867","26258","PLIX","Marico Plix","402","Xpressbees","
 const COUNTS={"correct_msp":42502,"msp_defect":9802,"brand_defect":1084,"ndd_defect":2020,"alert":145,"correct_brand":6735,"correct_ndd":6731,"rule_priority_defect":180,"correct_rule_priority":1841,"rule_not_found":4274,"out_of_scope":211};
 const STATUS_LABELS={"correct_ndd":"Correct NDD","ndd_defect":"NDD Defect","correct_msp":"Correct MSP","msp_defect":"MSP Defect","correct_brand":"Correct Brand Courier","brand_defect":"Brand Courier Defect","correct_rule_priority":"Correct Rule Priority","rule_priority_defect":"Rule Priority Defect","alert":"Alert","out_of_scope":"Out of Scope Order","rule_not_found":"Rule Not Found"};
 const TOTAL=75525;
-const RUN_TIME="16 Jun 2026, 01:12 PM";
+const RUN_TIME="16 Jun 2026, 01:25 PM";
 
 const PAGE=100;
 const SVC_TABS=['ndd_defect','msp_defect','brand_defect','rule_priority_defect','all'];
@@ -389,7 +396,6 @@ function switchTab(tab){
   document.getElementById('pnl-'+tab).classList.add('active');
   currentTab=tab;
   if(tab==='overview')return;
-  if(tab==='kam'){initKam();return;}
   const key=tsKey(currentView,tab);
   if(!tabState[key])tabState[key]={page:1,q:'',brand:'',courier:''};
   renderTable(currentView,tab);
@@ -804,6 +810,23 @@ function initKam(){
   kamInitialised=true;
   initKamBrandFilter();
   renderKamOverview();
+}
+let currentSection='mspndd';
+function switchSection(sec){
+  if(sec===currentSection)return;
+  currentSection=sec;
+  document.getElementById('sec-mspndd').classList.toggle('active',sec==='mspndd');
+  document.getElementById('sec-kam').classList.toggle('active',sec==='kam');
+  if(sec==='kam'){
+    document.getElementById('mspndd-tabbar').style.display='none';
+    document.querySelectorAll('.pnl').forEach(p=>p.classList.remove('active'));
+    document.getElementById('section-kam').style.display='';
+    initKam();
+  }else{
+    document.getElementById('section-kam').style.display='none';
+    document.getElementById('mspndd-tabbar').style.display='';
+    switchTab(currentTab);
+  }
 }
 </script>
 </body></html>
